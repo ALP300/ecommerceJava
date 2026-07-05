@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.ecommerce.ecommerceJava.model.Product;
 import com.ecommerce.ecommerceJava.repository.ProductRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProductService {
     private final ProductRepository productRepository;
 
