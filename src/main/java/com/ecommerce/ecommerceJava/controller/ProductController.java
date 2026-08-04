@@ -38,8 +38,8 @@ public class ProductController {
 
     @Operation(summary = "Obtener un producto por ID", description = "Retorna un único producto basado en su ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Producto encontrado"),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @GetMapping("/{id}")
     public Product getProductById(@PathVariable Long id) {
