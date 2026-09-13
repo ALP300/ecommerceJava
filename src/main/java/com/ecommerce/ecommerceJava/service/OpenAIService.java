@@ -24,7 +24,7 @@ public class OpenAIService {
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${openai.api.key}")
+    @Value("${openai.api.key:}")
     private String apiKey;
 
     @Value("${openai.api.url}")
@@ -46,6 +46,12 @@ public class OpenAIService {
      * @return RecommendationResponse con explicación de la IA y productos recomendados
      */
     public RecommendationResponse getRecommendations(RecommendationRequest request, List<Product> products) {
+        if (apiKey == null || apiKey.isBlank()) {
+            return new RecommendationResponse(
+                    "Servicio de recomendaciones con IA desactivado. Por favor, configura tu OPENAI_API_KEY en el archivo .env para activarlo.",
+                    List.of()
+            );
+        }
 
         String catalogContext = buildCatalogContext(products);
 
@@ -79,10 +85,13 @@ public class OpenAIService {
             return "No hay productos disponibles en el catálogo.";
         }
         return products.stream()
-                .map(p -> String.format(
-                        "ID: %d | Nombre: %s | Descripción: %s | Precio: $%.2f | Stock: %d | Categoría: %s",
-                        p.getId(), p.getName(), p.getDescription(),
-                        p.getPrice(), p.getStock(), p.getCategory()))
+                .map(p -> {
+                    String base = String.format("ID: %d | Nombre: %s | Descripción: %s | Precio: $%.2f | Stock: %d",
+                            p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getStock());
+                    return (p.getCategory() != null && p.getCategory().getNombre() != null)
+                            ? base + " | Categoría: " + p.getCategory().getNombre()
+                            : base;
+                })
                 .collect(Collectors.joining("\n"));
     }
 
@@ -91,9 +100,6 @@ public class OpenAIService {
         message.append("CATÁLOGO DE PRODUCTOS DISPONIBLES:\n").append(catalogContext).append("\n\n");
         message.append("CONSULTA DEL CLIENTE: ").append(request.getQuery());
 
-        if (request.getCategory() != null && !request.getCategory().isBlank()) {
-            message.append("\nCATEGORÍA PREFERIDA: ").append(request.getCategory());
-        }
         if (request.getMaxPrice() != null) {
             message.append("\nPRESUPUESTO MÁXIMO: $").append(request.getMaxPrice());
         }
@@ -153,9 +159,10 @@ public class OpenAIService {
 
                 if (productId != -1 && productMap.containsKey(productId)) {
                     Product p = productMap.get(productId);
+                    String catNombre = p.getCategory() != null ? p.getCategory().getNombre() : null;
                     recommendedProducts.add(new RecommendationResponse.RecommendedProduct(
                             p.getId(), p.getName(), p.getDescription(),
-                            p.getPrice(), p.getStock(), p.getCategory(), reason));
+                            p.getPrice(), p.getStock(), catNombre, reason));
                 }
             }
 

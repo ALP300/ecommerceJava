@@ -17,9 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
-@RequestMapping("api/recommendations")
-@Tag(name = "Recommendations", description = "Recomendaciones de productos con Inteligencia Artificial (ChatGPT)")
+@RequestMapping("/api/recommendations")
+@Tag(name = "Recomendaciones con IA", description = "Recomendaciones de productos con Inteligencia Artificial (ChatGPT)")
+@SecurityRequirement(name = "BearerAuthentication")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class RecommendationController {
 
     private final OpenAIService openAIService;
@@ -35,7 +40,7 @@ public class RecommendationController {
         description = """
                 Analiza el catálogo completo de productos registrados en la base de datos
                 y utiliza ChatGPT (GPT-4o-mini) para recomendar los más adecuados según
-                la consulta del usuario. Puedes filtrar por categoría y presupuesto máximo.
+                la consulta del usuario. Puedes especificar un presupuesto máximo opcional.
                 
                 **Ejemplo de consulta:** "Busco algo para el hogar que sea económico"
                 """
@@ -61,14 +66,6 @@ public class RecommendationController {
                     List.of()));
         }
 
-        // Filtrar por categoría si se especificó
-        if (request.getCategory() != null && !request.getCategory().isBlank()) {
-            allProducts = allProducts.stream()
-                    .filter(p -> p.getCategory() != null &&
-                            p.getCategory().equalsIgnoreCase(request.getCategory()))
-                    .toList();
-        }
-
         // Filtrar por precio máximo si se especificó
         if (request.getMaxPrice() != null) {
             allProducts = allProducts.stream()
@@ -78,8 +75,7 @@ public class RecommendationController {
 
         if (allProducts.isEmpty()) {
             return ResponseEntity.ok(new RecommendationResponse(
-                    "No se encontraron productos que coincidan con los filtros aplicados " +
-                    "(categoría: " + request.getCategory() + ", precio máximo: " + request.getMaxPrice() + ").",
+                    "No se encontraron productos que coincidan con el precio máximo (" + request.getMaxPrice() + ").",
                     List.of()));
         }
 

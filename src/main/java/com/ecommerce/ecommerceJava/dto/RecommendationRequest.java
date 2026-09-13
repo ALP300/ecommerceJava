@@ -11,10 +11,6 @@ public class RecommendationRequest {
             example = "Busco algo para cocinar de forma rápida y saludable")
     private String query;
 
-    @Schema(description = "Categoría específica para filtrar recomendaciones (opcional)",
-            example = "Electrónica")
-    private String category;
-
     @Schema(description = "Presupuesto máximo del cliente (opcional)", example = "500.0")
     private Double maxPrice;
 }

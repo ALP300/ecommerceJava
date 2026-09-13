@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerceJava.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,27 +14,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
-@Table(name = "product")
+@Table(name = "order_items")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
-    private String name;
-    private String description;
-    private double price;
-    private int stock;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    @ToString.Exclude
+    private Order order;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "categoria_id")
-    private Category category;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    private String imageUrl;
+    @Column(nullable = false)
+    private int quantity;
+
+    @Column(nullable = false)
+    private double price;
 }
