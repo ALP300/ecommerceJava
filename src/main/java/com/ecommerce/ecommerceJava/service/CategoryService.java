@@ -27,13 +27,13 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
 
     @Transactional(readOnly = true)
     public Category getCategoryBySlug(String slug) {
         return categoryRepository.findBySlug(slug)
-                .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con slug: " + slug));
+                .orElseThrow(() -> new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Categoría no encontrada con slug: " + slug));
     }
 
     @Transactional
@@ -41,24 +41,40 @@ public class CategoryService {
         if (category.getSlug() == null || category.getSlug().isBlank()) {
             category.setSlug(generateSlug(category.getNombre()));
         }
+        if (categoryRepository.existsBySlug(category.getSlug())) {
+            throw new IllegalArgumentException("Ya existe una categoría con el slug: " + category.getSlug());
+        }
         return categoryRepository.save(category);
     }
 
     @Transactional
     public Category updateCategory(Long id, Category updated) {
         Category existing = getCategoryById(id);
-        if (updated.getNombre() != null) existing.setNombre(updated.getNombre());
-        if (updated.getDescripcion() != null) existing.setDescripcion(updated.getDescripcion());
-        if (updated.getSlug() != null) existing.setSlug(updated.getSlug());
-        if (updated.getOrden() != null) existing.setOrden(updated.getOrden());
-        existing.setActiva(updated.isActiva());
+        if (updated.getNombre() != null && !updated.getNombre().isBlank()) {
+            existing.setNombre(updated.getNombre());
+        }
+        if (updated.getDescripcion() != null) {
+            existing.setDescripcion(updated.getDescripcion());
+        }
+        if (updated.getSlug() != null && !updated.getSlug().isBlank()) {
+            if (!updated.getSlug().equalsIgnoreCase(existing.getSlug()) && categoryRepository.existsBySlug(updated.getSlug())) {
+                throw new IllegalArgumentException("Ya existe otra categoría con el slug: " + updated.getSlug());
+            }
+            existing.setSlug(updated.getSlug());
+        }
+        if (updated.getOrden() != null) {
+            existing.setOrden(updated.getOrden());
+        }
+        if (updated.getActiva() != null) {
+            existing.setActiva(updated.getActiva());
+        }
         return categoryRepository.save(existing);
     }
 
     @Transactional
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new IllegalArgumentException("Categoría no encontrada con ID: " + id);
+            throw new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Categoría no encontrada con ID: " + id);
         }
         categoryRepository.deleteById(id);
     }

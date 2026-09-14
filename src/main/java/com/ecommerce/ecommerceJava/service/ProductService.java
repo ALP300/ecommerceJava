@@ -42,7 +42,7 @@ public class ProductService {
     public Product createProduct(Product product) {
         if (product.getCategory() != null && product.getCategory().getId() != null) {
             Category category = categoryRepository.findById(product.getCategory().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + product.getCategory().getId()));
+                    .orElseThrow(() -> new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Categoría no encontrada con ID: " + product.getCategory().getId()));
             product.setCategory(category);
         }
         return productRepository.save(product);
@@ -59,11 +59,11 @@ public class ProductService {
 
             if (updatedProduct.getCategory() != null && updatedProduct.getCategory().getId() != null) {
                 Category category = categoryRepository.findById(updatedProduct.getCategory().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + updatedProduct.getCategory().getId()));
+                        .orElseThrow(() -> new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Categoría no encontrada con ID: " + updatedProduct.getCategory().getId()));
                 existing.setCategory(category);
             }
             return productRepository.save(existing);
-        }).orElseThrow(() -> new RuntimeException("Producto no encontrado con el id: " + id));
+        }).orElseThrow(() -> new com.ecommerce.ecommerceJava.exception.ResourceNotFoundException("Producto no encontrado con el id: " + id));
     }
 
     @Transactional
