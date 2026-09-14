@@ -34,6 +34,6 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         body.put("path", request.getServletPath());
 
         // Use custom or standard json writing
-        new com.fasterxml.jackson.databind.ObjectMapper().writeValue(response.getOutputStream(), body);
+        new ObjectMapper().writeValue(response.getOutputStream(), body);
     }
 }
